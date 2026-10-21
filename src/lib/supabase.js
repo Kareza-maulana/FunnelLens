@@ -9,13 +9,27 @@ export const supabase = supabaseConfigured
 
 const apiBase = import.meta.env.VITE_API_URL || 'http://127.0.0.1:3000';
 export async function apiRequest(path, options = {}) {
-  if (!supabase) throw new Error('Supabase belum dikonfigurasi pada frontend.');
-  const { data: { session } } = await supabase.auth.getSession();
+  let token = null;
+  if (supabase) {
+    try {
+      const { data } = await supabase.auth.getSession();
+      token = data?.session?.access_token || null;
+    } catch {}
+  }
+  if (!token) {
+    try {
+      const saved = typeof window !== 'undefined' ? window.localStorage.getItem('funnellens_session') : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        token = parsed?.access_token || null;
+      }
+    } catch {}
+  }
   const response = await fetch(`${apiBase}${path}`, {
     ...options,
     headers: {
       'content-type': 'application/json',
-      ...(session?.access_token ? { authorization: `Bearer ${session.access_token}` } : {}),
+      ...(token ? { authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
   });

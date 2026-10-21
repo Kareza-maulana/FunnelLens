@@ -14,17 +14,15 @@ export default function Landing() {
   return <main className="landing-page">
     <header className="landing-nav">
       <Link to="/" aria-label="FunnelLens, beranda"><Logo/></Link>
-      <nav aria-label="Navigasi halaman"><button onClick={scrollToStory}>Cara kerja</button><a href="https://undraw.co/illustration/business-analytics_y8m6" target="_blank" rel="noreferrer">Tentang visual</a></nav>
+      <nav aria-label="Navigasi halaman"><button onClick={scrollToStory}>Cara kerja</button></nav>
       <Link className="landing-nav-cta" to="/login">Masuk <ArrowUpRight size={16}/></Link>
     </header>
 
     <section className="landing-hero">
       <div className="landing-copy">
-        <span className="landing-kicker"><i/> PANDANGAN YANG LEBIH JELAS TENTANG PERTUMBUHAN</span>
         <h1>Marketing-mu jalan. <em>Tapi ke mana?</em></h1>
         <p className="landing-lede">FunnelLens membantu tim marketing melihat apa yang terjadi di setiap tahap funnel—dan memilih langkah yang paling masuk akal sesudahnya.</p>
         <div className="landing-actions"><Link className="landing-primary" to="/login">Kenali FunnelLens <ArrowRight size={17}/></Link><button className="landing-secondary" onClick={scrollToStory}><span><ArrowDown size={15}/></span> Lihat cara kerjanya</button></div>
-        <div className="landing-proof"><div className="proof-spark">✳</div><span>Dibuat untuk mengubah banyak metrik<br/>menjadi satu cerita yang mudah dibaca.</span></div>
       </div>
       <div className="landing-visual-wrap" aria-label="Ilustrasi analitik bisnis">
         <div className="landing-visual-note">Dari klik pertama<br/>sampai dampak bisnis <span>↘</span></div>
@@ -42,6 +40,6 @@ export default function Landing() {
     </section>
 
     <section className="landing-closer"><div className="closer-mark">F<span>.</span></div><div><span className="landing-kicker">MULAI DENGAN GAMBARAN YANG LEBIH UTUH</span><h2>Siap melihat funnel-mu<br/><em>dengan cara berbeda?</em></h2></div><Link to="/login" className="landing-primary">Masuk ke workspace <ArrowRight size={17}/></Link></section>
-    <footer className="landing-footer"><Link to="/"><Logo/></Link><span>FunnelLens · Pahami funnel. Pilih langkah berikutnya.</span><span>Ilustrasi oleh <a href="https://undraw.co/illustration/business-analytics_y8m6" target="_blank" rel="noreferrer">unDraw</a></span></footer>
+    <footer className="landing-footer"><Link to="/"><Logo/></Link><span>FunnelLens · Pahami funnel. Pilih langkah berikutnya.</span></footer>
   </main>;
 }
