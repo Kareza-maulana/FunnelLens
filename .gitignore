@@ -1,6 +1,12 @@
 node_modules/
+backend/node_modules/
+backend/.env
+backend/.env.*
+!backend/.env.example
 dist/
 .sites-runtime/
 .env*
+!.env.example
 *.log
 test-results/
+.DS_Store

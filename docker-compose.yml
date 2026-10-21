@@ -1,0 +1,74 @@
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-funnellens_mvp}
+      POSTGRES_USER: ${POSTGRES_USER:-funnellens_migrate}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-only-change-me}
+    ports:
+      - "127.0.0.1:${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - funnellens-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build: ./backend
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      DATABASE_URL: postgres://${API_DATABASE_USER:-funnellens_api}:${API_DATABASE_PASSWORD:-local-only-change-me}@db:5432/${POSTGRES_DB:-funnellens_mvp}
+      HOST: 0.0.0.0
+      OLLAMA_BASE_URL: http://ollama:11434
+      OPENWA_BASE_URL: http://openwa:8080
+      OPENWA_API_TOKEN: ${OPENWA_API_TOKEN:-dev-openwa-token-change-me}
+      OPENWA_WEBHOOK_SECRET: ${OPENWA_WEBHOOK_SECRET:-dev-openwa-webhook-secret-change-me}
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "bun", "-e", "fetch('http://127.0.0.1:3000/ready').then(r => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ollama:
+    image: ollama/ollama
+    profiles: ["ai"]
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:11434:11434"
+    volumes:
+      - funnellens-ollama:/root/.ollama
+
+  openwa:
+    image: openwa/wa-automate:latest
+    profiles: ["whatsapp"]
+    init: true
+    restart: unless-stopped
+    environment:
+      WA_PORT: "8080"
+      WA_HOST: 0.0.0.0
+      WA_SESSION_ID: funnellens
+      WA_USER_DATA_DIR: /sessions/funnellens
+      WA_API_KEY: ${OPENWA_API_TOKEN:-dev-openwa-token-change-me}
+      OPENWA_WEBHOOK_SECRET: ${OPENWA_WEBHOOK_SECRET:-dev-openwa-webhook-secret-change-me}
+      W_A_V: 5.6.6
+    command: ["--config", "/config/wa.config.mjs", "--session-id", "funnellens", "--host", "0.0.0.0", "--port", "8080"]
+    volumes:
+      - funnellens-openwa:/sessions
+      - ./backend/openwa/wa.config.mjs:/config/wa.config.mjs:ro
+    ports:
+      - "127.0.0.1:8000:8080"
+
+volumes:
+  funnellens-postgres:
+  funnellens-ollama:
+  funnellens-openwa:

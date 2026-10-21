@@ -1,0 +1,25 @@
+{
+  "name": "funnellens-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "start": "bun src/index.ts",
+    "generate:keys": "bun tools/generate-keys.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elysia/cors": "^1.4.2",
+    "drizzle-orm": "^0.44.5",
+    "elysia": "^1.4.13",
+    "postgres": "^3.4.7",
+    "nodemailer": "^7.0.7",
+    "zod": "^4.1.12"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.2.23",
+    "@types/nodemailer": "^6.4.19",
+    "typescript": "^5.9.3"
+  }
+}

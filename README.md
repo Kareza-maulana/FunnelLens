@@ -1,62 +1,34 @@
-# FunnelLens — React Interactive Prototype
+# FunnelLens
 
-Prototipe demo berbahasa Indonesia berdasarkan mockup insight yang telah disetujui dan alur onboarding FunnelLens. Seluruh proses berjalan di browser. Tidak ada integrasi Meta, MCP, OAuth, AI, pembayaran iklan, atau analisis agentic sungguhan.
+FunnelLens is a React/Vite owner workspace with a Bun/Elysia API and PostgreSQL data model. Supabase provides owner authentication; the API connects directly to Postgres and keeps the private `app` schema and provider credentials out of the browser.
 
-## Menjalankan
+## Run locally
 
-Node.js 20.19+ atau 22.12+ disarankan.
+1. Create a Supabase project and follow [supabase/README.md](supabase/README.md) to apply the migrations and create the restricted API database login.
+2. Copy `backend/.env.example` to `backend/.env`, then enter the Supabase URL, publishable key, owner Auth UUID, database URL, and newly generated encryption keys.
+3. Copy `.env.example` to `.env.local` and set the frontend Supabase URL/key and API URL.
+4. Install Bun 1.4+, Node.js 20.19+ (or 22.12+), and Docker Compose. Install dependencies with `bun install --cwd backend` and `npm install`.
+5. Start the API with `bun run --cwd backend dev` and the frontend with `npm run dev` in separate terminals. Sign in using the provisioned owner account.
 
-```sh
-npm install
-npm run dev
-```
+See [backend/README.md](backend/README.md) for local PostgreSQL, Docker, Ollama, OpenWA, and API setup.
 
-Buka URL yang ditampilkan Vite. Untuk build distribusi:
+## Implemented integrations
 
-```sh
-npm test
-npm run build
-npm run preview
-```
+- Supabase Auth login is verified by the backend. One configured owner can read/write the saved business profile and onboarding draft.
+- The API stores primary product data, encrypted Meta credentials, connection status, campaign plans, immutable drafts, and owner approval decisions in PostgreSQL.
+- Meta OAuth reads available ad accounts, Pages, permissions, and WhatsApp Business phone assets. Campaign configuration is persisted as a paused draft; owner approval is recorded separately.
+- OpenWA health verification and signed webhook ingestion save contacts/messages with encrypted PII. Local Ollama classifies masked messages when available; a message is still stored as unclassified if Ollama is offline.
+- Landing Page tracking events and consented form leads can be stored in Supabase. Contact details and free-text needs are encrypted before persistence.
+- Backend endpoints support readiness, workspace persistence, Meta/OpenWA/landing-page integrations, campaign approvals, AI brand options/insights, and lead intent classification.
 
-Hasil build berada di `dist/`. Gunakan server HTTP; jangan membuka `index.html` melalui `file://`. HashRouter memungkinkan navigasi pada hosting statis tanpa konfigurasi rewrite.
+## Current limits
 
-## Alur demo
+Campaign approval is a database decision only. A Meta write worker has not been implemented, so no ad is created, paused, or activated. Existing Landing Page templates are previews; campaign submission requires a live HTTPS landing-page URL. WhatsApp campaigns require a Meta-verified WhatsApp Business phone asset.
 
-1. Isi profil bisnis atau klik **Isi contoh bisnis**. Produk, harga, varian, gambar, target pelanggan, dan wilayah disimpan otomatis.
-2. Isi brand sendiri atau gunakan generator template lokal untuk memilih dan mengedit tiga konsep.
-3. Pilih WhatsApp, landing page, atau gabungan. Uji form LP, atur audiens, budget periode, dan jadwal.
-4. Review strategi cold-first, playbook funnel, dan teks creative.
-5. Hubungkan akun **simulasi**, pilih aset, lalu review seluruh konfigurasi.
-6. Centang persetujuan dan jalankan skenario berhasil atau gagal parsial. Retry memakai identitas pekerjaan yang sama. Campaign masuk ke Campaign Controls dengan status demo.
-7. Jelajahi delapan area insight melalui sidebar. Audience WA dan LP menjadi dua tampilan pada satu area Audience Intelligence, sesuai revisi yang disetujui.
+The Overview, Funnel, Audience, Campaign, Creative, Insight, Strategy, and Business Impact analytics still use the prototype fixtures in `src/lib/data.js`; they are not yet populated from Meta metrics or production lead records. Strategy execution, Meta CAPI, background sync/embedding workers, and production deployment are also not complete. The UI identifies the remaining prototype analytics and does not present them as live account performance.
 
-## Interaksi
+## Data and credentials
 
-- Overview merangkum Business Impact, Funnel, Audience, Campaign, Creative, AI Insight, dan Strategy sebelum saran aksi.
-- Funnel: distribusi/tren, populasi profil/lead, drill-down tahap, dan metrik campaign.
-- Audience: sumber WA/LP, nama dan nomor HP tersamarkan, level cold/warm/hot, pencarian, filter, ekspor, bukti, catatan, dan review klasifikasi manual.
-- Campaign: tabel/matriks, sortir, compare, breakdown ad set, dan ekspor CSV.
-- Creative: analisis per materi, storyboard, rekomendasi brief, draft variasi, dan saran alokasi.
-- AI Insight: bukti, observasi, hipotesis, rekomendasi, status review, alasan, dan riwayat lokal.
-- Strategy: slider budget, simulasi QL berbasis biaya konstan, review dan penerapan lokal.
-- Business Impact: revenue, coverage atribusi, ROAS, tren, audit transaksi, dan penandaan review.
-- Campaign Controls: tambah campaign demo, review status, pause/resume, dan budget simulasi.
-- Integrations & Data: koneksi demo, ekspor/impor JSON, event log lokal, dan reset.
-- Pencarian global dengan Ctrl/Cmd + K, notifikasi, panduan, drawer, dan modal keyboard accessible.
+The supplied `schema.sql` is a fresh-database migration source. Apply the committed Supabase migrations to a new project; do not run the bundle over an existing database. Never commit `.env`, `backend/.env`, database URLs/passwords, Supabase secret/service-role keys, Meta secrets, PII keys, or OpenWA secrets. The browser uses only the Supabase publishable key.
 
-## Penyimpanan dan data
-
-Data onboarding dan keputusan demo disimpan pada `localStorage` dengan kunci `funnellens:workspace:v1`. Penyimpanan terpisah untuk setiap origin, profil browser, dan perangkat. Data tidak dikirim ke server. Gunakan ekspor JSON untuk memindahkan draft antar-browser atau URL lokal/hosting. Mode privat dan penghapusan data browser dapat menghapus draft.
-
-Foto dan logo opsional disimpan sebagai data URL, maksimal 750 KB per file untuk mengurangi risiko kuota browser. Jika penyimpanan penuh/diblokir, aplikasi menampilkan pesan dan menyediakan ekspor. Reset hanya menghapus kunci FunnelLens. Data rusak tidak ditimpa saat initial load; perubahan baru atau impor dapat memulai draft pengganti.
-
-Metrik insight bersumber dari fixture di `src/lib/data.js`, bukan dari input onboarding. Profil bisnis dan aset dapat mengubah label/preview, tetapi tidak menciptakan klaim performa. Snapshot profil funnel, cohort lead, dan transaksi memakai unit berbeda dengan caption scope. September menjadi baseline; Juli/Agustus adalah skenario sintetis. Beberapa rekomendasi dan cohort sengaja memakai baseline September yang ditandai di UI.
-
-Angka baseline: Rp24 juta spend, 720 qualified leads, 10.000 profil tertaut, 96 sampel lead lintas campaign, 240 transaksi dengan 180 tertaut dan 60 belum teratribusi. Tidak ada CAC karena status pelanggan baru tidak tersedia. Estimasi strategi adalah aritmetika linear, bukan prediksi AI.
-
-## Stack dan struktur
-
-React 19, Vite 6, React Router, Recharts, Lucide. `src/pages` berisi halaman, `src/context.jsx` mengelola workspace, `src/lib/domain.js` validasi/persistensi, dan `tests/domain.test.js` memeriksa batas utama. Gambar produk contoh berada di `public/product.png`. Font memakai DM Sans/Manrope bila tersedia dari Google Fonts, dengan fallback sistem.
-
-Mockup PNG yang disetujui tetap berada di folder referensi semula dan tidak diubah oleh implementasi ini.
+`src/lib/data.js` remains a labeled demo dataset for the insight surfaces. Local unauthenticated drafts may be kept in browser storage; signed-in workspace drafts sync to Supabase.
